@@ -37,13 +37,30 @@ The codebase follows clean code principles with immutable domain models, interfa
 ### Prerequisites
 
 - Java 25+
-- Maven (or use the included `./mvnw` wrapper)
+- Maven 3.8+ (or use the included `./mvnw` wrapper)
 - Junit 5 / AssertJ
 
 ### Run tests
 
 ```bash
 ./mvnw test
+```
+### Use as a dependency
+
+Install to your local Maven repository:
+
+```bash
+./mvnw install
+```
+
+Then add to your project's `pom.xml`:
+
+```xml
+<dependency>
+    <groupId>pl.where2play</groupId>
+    <artifactId>cup-score-board</artifactId>
+    <version>1.0.0</version>
+</dependency>
 ```
 
 ### Usage example
@@ -75,6 +92,17 @@ List<Game> summary = board.getSummary();
 
 // Finish a game
 board.finishGame("Mexico", "Canada");
+```
+
+### Using a custom store
+
+The default `InMemoryScoreBoard` uses `LinkedHashMapGameStore` internally.
+You can provide your own `GameStore` implementation — for example, a
+thread-safe store or a JDBC-backed one — without touching the board logic:
+
+```java
+GameStore myStore = new MyCustomGameStore();
+ScoreBoard board  = new InMemoryScoreBoard(myStore);
 ```
 
 ---

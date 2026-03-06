@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>pl.where2play</groupId>
-    <artifactId>score-board</artifactId>
+    <artifactId>cup-score-board</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>score-board</name>
+    <name>cup-score-board</name>
     <description>Football World Cup Score Board — plain Java library</description>
 
     <properties>
