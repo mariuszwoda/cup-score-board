@@ -1,7 +1,9 @@
 package pl.where2play.cupscoreboard.service;
 
 import pl.where2play.cupscoreboard.exception.GameAlreadyExistsException;
+import pl.where2play.cupscoreboard.exception.GameNotFoundException;
 import pl.where2play.cupscoreboard.model.Game;
+import pl.where2play.cupscoreboard.model.Score;
 import pl.where2play.cupscoreboard.model.Team;
 
 import java.util.LinkedHashMap;
@@ -38,7 +40,14 @@ public class InMemoryScoreBoard implements ScoreBoard {
 
     @Override
     public Game updateScore(String homeTeam, String awayTeam, int homeScore, int awayScore) {
-        throw new UnsupportedOperationException("not implemented yet");
+        GameKey key = GameKey.of(homeTeam, awayTeam);
+        Game existing = games.get(key);
+        if (existing == null) {
+            throw new GameNotFoundException(homeTeam, awayTeam);
+        }
+        Game updated = existing.withScore(new Score(homeScore, awayScore));
+        games.replace(key, updated);
+        return updated;
     }
 
     @Override
