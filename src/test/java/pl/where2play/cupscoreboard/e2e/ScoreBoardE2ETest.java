@@ -1,6 +1,7 @@
 package pl.where2play.cupscoreboard.e2e;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import pl.where2play.cupscoreboard.model.Game;
 import pl.where2play.cupscoreboard.service.InMemoryScoreBoard;
@@ -33,6 +34,7 @@ import static org.assertj.core.api.Assertions.tuple;
  * @see ScoreBoard
  * @see InMemoryScoreBoard
  */
+@Tag("e2e")
 @DisplayName("ScoreBoard EndToEnd scenario")
 class ScoreBoardE2ETest {
 

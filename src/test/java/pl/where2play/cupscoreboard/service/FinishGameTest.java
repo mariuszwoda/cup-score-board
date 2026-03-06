@@ -3,6 +3,7 @@ package pl.where2play.cupscoreboard.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import pl.where2play.cupscoreboard.exception.GameNotFoundException;
 
@@ -10,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+@Tag("unit")
 @DisplayName("ScoreBoard.finishGame()")
 class FinishGameTest {
 

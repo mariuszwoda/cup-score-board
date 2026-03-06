@@ -3,6 +3,7 @@ package pl.where2play.cupscoreboard.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import pl.where2play.cupscoreboard.model.Game;
 
@@ -12,6 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+@Tag("unit")
 @DisplayName("ScoreBoard.getSummary()")
 class GetSummaryTest {
 
@@ -204,10 +206,10 @@ class GetSummaryTest {
             assertThat(summary)
                     .hasSize(1)
                     .first()
-                    .satisfies(game -> {
-                        assertThat(game.homeTeam().name()).isEqualTo(SPAIN);
-                        assertThat(game.awayTeam().name()).isEqualTo(BRAZIL);
-                    });
+                    .satisfies(game -> assertSoftly(softly -> {
+                        softly.assertThat(game.homeTeam().name()).isEqualTo(SPAIN);
+                        softly.assertThat(game.awayTeam().name()).isEqualTo(BRAZIL);
+                    }));
         }
 
         @Test

@@ -2,6 +2,7 @@ package pl.where2play.cupscoreboard.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.*;
  * and AssertJ for fluent, readable assertions.</p>
  */
 @ExtendWith(MockitoExtension.class)
+@Tag("unit")
 @DisplayName("InMemoryScoreBoard GameStore delegation")
 class GameStoreTest {
 
@@ -104,7 +106,7 @@ class GameStoreTest {
         @DisplayName("should delegate removal to store when game exists")
         void shouldDelegateRemovalToStoreWhenGameExists() {
             // Arrange
-            when(gameStore.findByTeams(HOME, AWAY)).thenReturn(Optional.of(EXISTING_GAME));
+            when(gameStore.remove(HOME, AWAY)).thenReturn(true);
 
             // Act
             scoreBoard.finishGame(HOME, AWAY);
@@ -114,18 +116,16 @@ class GameStoreTest {
         }
 
         @Test
-        @DisplayName("should throw GameNotFoundException and never remove when game not found")
-        void shouldThrowAndNeverRemoveWhenGameNotFound() {
+        @DisplayName("should throw GameNotFoundException when game not found in store")
+        void shouldThrowWhenGameNotFound() {
             // Arrange
-            when(gameStore.findByTeams(HOME, AWAY)).thenReturn(Optional.empty());
+            when(gameStore.remove(HOME, AWAY)).thenReturn(false);
 
             // Act & Assert
             assertThatThrownBy(() -> scoreBoard.finishGame(HOME, AWAY))
                     .isInstanceOf(GameNotFoundException.class)
                     .hasMessageContaining(HOME)
                     .hasMessageContaining(AWAY);
-
-            verify(gameStore, never()).remove(any(), any());
         }
     }
 

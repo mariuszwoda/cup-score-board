@@ -25,8 +25,10 @@ public interface GameStore {
 
     /**
      * Removes the game identified by the given team names.
+     *
+     * @return {@code true} if a game was found and removed, {@code false} if no matching game existed
      */
-    void remove(String homeTeam, String awayTeam);
+    boolean remove(String homeTeam, String awayTeam);
 
     /**
      * Returns all live games in insertion order (oldest first).

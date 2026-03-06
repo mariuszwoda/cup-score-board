@@ -8,9 +8,9 @@ import java.util.*;
 /**
  * {@link LinkedHashMap}-backed implementation of {@link GameStore}.
  *
- * <p>Insertion order is preserved, which provides the tie-breaking information
- * required by {@link InMemoryScoreBoard#getSummary()} — most recently added
- * game appears last in {@link #getAll()}, i.e. highest index.</p>
+ * <p>Insertion order is preserved. {@link InMemoryScoreBoard#getSummary()} uses
+ * {@link pl.where2play.cupscoreboard.model.Game#startedAt()} for tie-breaking,
+ * so insertion order in the store is not relied upon for ordering.</p>
  *
  * <p>Team names are normalised (trimmed, upper-cased) before use as keys
  * so lookups are case-insensitive.</p>
@@ -32,8 +32,8 @@ public class LinkedHashMapGameStore implements GameStore {
     }
 
     @Override
-    public void remove(String homeTeam, String awayTeam) {
-        store.remove(GameKey.of(homeTeam, awayTeam));
+    public boolean remove(String homeTeam, String awayTeam) {
+        return store.remove(GameKey.of(homeTeam, awayTeam)) != null;
     }
 
     @Override

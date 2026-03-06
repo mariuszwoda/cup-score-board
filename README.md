@@ -113,10 +113,13 @@ ScoreBoard board  = new InMemoryScoreBoard(myStore);
 `Team`, `Score`, and `Game` are all immutable — `Team` and `Score` as Java records, `Game` as a final class with a `withScore(Score)` copy-constructor pattern. This eliminates accidental mutation and makes the domain model easy to reason about.
 
 ### In-memory store
-`InMemoryScoreBoard` uses a `LinkedHashMap<GameKey, Game>` which preserves **insertion order** — this is leveraged directly for tie-breaking in `getSummary()` without any extra bookkeeping.
+`InMemoryScoreBoard` uses a `LinkedHashMap<GameKey, Game>` which preserves **insertion order** for deterministic iteration.
 
 ### Ordering in `getSummary`
-Games are sorted by **total goals descending**. When two games share the same total, the game added **most recently** appears first. This is achieved by comparing the reversed index of each game's key in the insertion-ordered key list.
+Games are sorted by **total goals descending**. When two games share the same total, the game with the **most recent `startedAt` timestamp** appears first. This is an O(n log n) sort using `Game#startedAt()` as the tiebreaker — avoiding the O(n² log n) `indexOf`-based approach.
+
+### Exception hierarchy
+All domain exceptions (`GameNotFoundException`, `GameAlreadyExistsException`) extend `ScoreBoardException`, which itself extends `RuntimeException`. This lets callers catch the entire hierarchy with a single handler when fine-grained handling is not needed.
 
 ### Case-insensitive team names
 `GameKey` normalises all team names to trimmed upper-case, so `"spain"`, `"Spain"`, and `"SPAIN"` all refer to the same team in any scoreboard operation.

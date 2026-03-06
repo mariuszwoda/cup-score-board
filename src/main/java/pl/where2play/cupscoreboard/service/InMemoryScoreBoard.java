@@ -6,14 +6,17 @@ import pl.where2play.cupscoreboard.model.Game;
 import pl.where2play.cupscoreboard.model.Score;
 import pl.where2play.cupscoreboard.model.Team;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * In-memory implementation of {@link ScoreBoard}.
  *
  * <p>Delegates all storage operations to a {@link GameStore}, defaulting to
- * {@link LinkedHashMapGameStore}. The store preserves insertion order which
- * provides the tie-breaking needed by {@link #getSummary()}.</p>
+ * {@link LinkedHashMapGameStore}.</p>
+ *
+ * <p>{@link #getSummary()} orders games by total goals descending, breaking ties
+ * by {@link Game#startedAt()} descending (most recently started game first).</p>
  *
  * <p>This implementation is <strong>not</strong> thread-safe.</p>
  */
@@ -47,9 +50,9 @@ public class InMemoryScoreBoard implements ScoreBoard {
 
     @Override
     public void finishGame(String homeTeam, String awayTeam) {
-        store.findByTeams(homeTeam, awayTeam)
-                .orElseThrow(() -> new GameNotFoundException(homeTeam, awayTeam));
-        store.remove(homeTeam, awayTeam);
+        if (!store.remove(homeTeam, awayTeam)) {
+            throw new GameNotFoundException(homeTeam, awayTeam);
+        }
     }
 
     @Override
@@ -63,12 +66,11 @@ public class InMemoryScoreBoard implements ScoreBoard {
 
     @Override
     public List<Game> getSummary() {
-        List<Game> all = store.getAll();
-        return all.stream()
+        return store.getAll().stream()
                 .sorted(Comparator
                         .comparingInt((Game g) -> g.score().totalGoals())
                         .reversed()
-                        .thenComparingInt(g -> -all.indexOf(g)))
+                        .thenComparing(Comparator.comparing(Game::startedAt).reversed()))
                 .toList();
     }
 }
