@@ -35,7 +35,10 @@ public class InMemoryScoreBoard implements ScoreBoard {
 
     @Override
     public void finishGame(String homeTeam, String awayTeam) {
-        throw new UnsupportedOperationException("not implemented yet");
+        GameKey key = GameKey.of(homeTeam, awayTeam);
+        if (games.remove(key) == null) {
+            throw new GameNotFoundException(homeTeam, awayTeam);
+        }
     }
 
     @Override
