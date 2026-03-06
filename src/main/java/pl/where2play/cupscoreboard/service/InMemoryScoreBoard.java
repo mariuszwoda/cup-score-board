@@ -11,76 +11,64 @@ import java.util.*;
 /**
  * In-memory implementation of {@link ScoreBoard}.
  *
- * <p>Games are stored in a {@link LinkedHashMap} to preserve insertion order,
- * which is used as a tie-breaker when two games share the same total score —
- * the most recently started game appears first in the summary.
+ * <p>Delegates all storage operations to a {@link GameStore}, defaulting to
+ * {@link LinkedHashMapGameStore}. The store preserves insertion order which
+ * provides the tie-breaking needed by {@link #getSummary()}.</p>
+ *
+ * <p>This implementation is <strong>not</strong> thread-safe.</p>
  */
 public class InMemoryScoreBoard implements ScoreBoard {
 
-    private final Map<GameKey, Game> games = new LinkedHashMap<>();
+    private final GameStore store;
+
+    /**
+     * Creates a board backed by the default {@link LinkedHashMapGameStore}.
+     */
+    public InMemoryScoreBoard() {
+        this(new LinkedHashMapGameStore());
+    }
+
+    /**
+     * Creates a board backed by the provided {@link GameStore} (for testing or custom stores).
+     */
+    public InMemoryScoreBoard(GameStore store) {
+        this.store = store;
+    }
 
     @Override
     public Game startGame(String homeTeam, String awayTeam) {
-        GameKey key = GameKey.of(homeTeam, awayTeam);
-        if (games.containsKey(key)) {
+        if (store.findByTeams(homeTeam, awayTeam).isPresent()) {
             throw new GameAlreadyExistsException(homeTeam, awayTeam);
         }
         Game game = new Game(new Team(homeTeam), new Team(awayTeam));
-        games.put(key, game);
+        store.save(game);
         return game;
     }
 
     @Override
     public void finishGame(String homeTeam, String awayTeam) {
-        GameKey key = GameKey.of(homeTeam, awayTeam);
-        if (games.remove(key) == null) {
-            throw new GameNotFoundException(homeTeam, awayTeam);
-        }
+        store.findByTeams(homeTeam, awayTeam)
+                .orElseThrow(() -> new GameNotFoundException(homeTeam, awayTeam));
+        store.remove(homeTeam, awayTeam);
     }
 
     @Override
     public Game updateScore(String homeTeam, String awayTeam, int homeScore, int awayScore) {
-        GameKey key = GameKey.of(homeTeam, awayTeam);
-        Game existing = games.get(key);
-        if (existing == null) {
-            throw new GameNotFoundException(homeTeam, awayTeam);
-        }
+        Game existing = store.findByTeams(homeTeam, awayTeam)
+                .orElseThrow(() -> new GameNotFoundException(homeTeam, awayTeam));
         Game updated = existing.withScore(new Score(homeScore, awayScore));
-        games.replace(key, updated);
+        store.save(updated);
         return updated;
     }
 
     @Override
     public List<Game> getSummary() {
-        List<Game> byInsertion = new ArrayList<>(games.values());
-        return byInsertion.stream()
+        List<Game> all = store.getAll();
+        return all.stream()
                 .sorted(Comparator
-                        .comparingInt((Game g) -> g.score().totalGoals()).reversed()
-                        .thenComparingInt(g -> -byInsertion.indexOf(g)))
+                        .comparingInt((Game g) -> g.score().totalGoals())
+                        .reversed()
+                        .thenComparingInt(g -> -all.indexOf(g)))
                 .toList();
-    }
-
-    private record GameKey(String homeTeam, String awayTeam) {
-
-        GameKey {
-            homeTeam = normalise(homeTeam);
-            awayTeam = normalise(awayTeam);
-        }
-
-        /**
-         * Factory method providing a named, readable construction point.
-         */
-        static GameKey of(String homeTeam, String awayTeam) {
-            return new GameKey(homeTeam, awayTeam);
-        }
-
-        private static String normalise(String name) {
-            Objects.requireNonNull(name, "Team name must not be null");
-            String trimmed = name.trim();
-            if (trimmed.isBlank()) {
-                throw new IllegalArgumentException("Team name must not be blank");
-            }
-            return trimmed.toUpperCase();
-        }
     }
 }
