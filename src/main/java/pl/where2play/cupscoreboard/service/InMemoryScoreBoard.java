@@ -6,10 +6,7 @@ import pl.where2play.cupscoreboard.model.Game;
 import pl.where2play.cupscoreboard.model.Score;
 import pl.where2play.cupscoreboard.model.Team;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * In-memory implementation of {@link ScoreBoard}.
@@ -55,7 +52,11 @@ public class InMemoryScoreBoard implements ScoreBoard {
 
     @Override
     public List<Game> getSummary() {
-        return List.copyOf(games.values());
+        return games.values().stream()
+                .sorted(Comparator
+                        .comparingInt((Game g) -> g.score().totalGoals()).reversed()
+                        .thenComparing(Comparator.comparing(Game::startedAt).reversed()))
+                .toList();
     }
 
     private record GameKey(String homeTeam, String awayTeam) {
